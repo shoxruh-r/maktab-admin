@@ -109,7 +109,7 @@
 
             if (success) {
                 data = data.map(news => [
-                    `<img src="/images/${news.image}" width="32">`,
+                    `<img src="/api/images/${news.image}" width="32">`,
                     news.title,
                     `<button id="${news._id}" class="update btn btn-warning text-white" data-bs-toggle="modal" data-bs-target="#updateModal"><i class="fas fa-pen"></i> Yangilash</button>
                     <button id="${news._id}" class="delete btn btn-danger"><i class="fas fa-trash"></i> O'chirish</button>`
