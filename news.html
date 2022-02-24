@@ -108,11 +108,11 @@
             let { success, data } = await response.json()
 
             if (success) {
-                data = data.map(news => [
+                data = data.map((news, index) => [
                     `<img src="/api/public/${news.image}" width="32">`,
                     news.title,
-                    `<button id="${news._id}" class="update btn btn-warning text-white" data-bs-toggle="modal" data-bs-target="#updateModal"><i class="fas fa-pen"></i> Yangilash</button>
-                    <button id="${news._id}" class="delete btn btn-danger"><i class="fas fa-trash"></i> O'chirish</button>`
+                    `<button id="${index}" class="update btn btn-warning text-white" data-bs-toggle="modal" data-bs-target="#updateModal"><i class="fas fa-pen"></i> Yangilash</button>
+                    <button id="${index}" class="delete btn btn-danger"><i class="fas fa-trash"></i> O'chirish</button>`
                 ])
 
                 datatable.rows().add(data)
@@ -120,14 +120,14 @@
 
             // === Tugma bosilganda yangilash formasini ochamiz ===
             document.querySelectorAll('.update')
-                .forEach(button => button.addEventListener('click', async e => {
+                .forEach((button, index) => button.addEventListener('click', async e => {
                     const response = await fetch(`/api/news/${button.id}`)
 
                     const { success, data } = await response.json()
                     if (success) {
                         document.querySelector('#title').value = data.title
                         document.querySelector('#text').value = data.text
-                        document.querySelector('form').action = `/api/news/${data._id}`
+                        document.querySelector('form').action = `/api/news/${index}`
                     }
                 }))
 
