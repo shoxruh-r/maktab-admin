@@ -70,7 +70,7 @@
             const { success, data } = await response.json()
 
             if (success) {
-                document.querySelector('#info').value = data.text
+                document.querySelector('#info').value = data
                 document.querySelector('button[type="submit"]').disabled = false
             }
         })()
@@ -80,8 +80,8 @@
             e.preventDefault()
             document.querySelector('button[type="submit"]').disabled = true
 
-            const text = e.target.querySelector('#info').value
-            if (!text) return
+            const info = e.target.querySelector('#info').value
+            if (!info) return
 
             const response = await fetch('/api/info', {
                 method: 'POST',
@@ -90,7 +90,7 @@
                     'Content-Type': 'application/json',
                     'Authorization': localStorage.getItem('token')
                 },
-                body: JSON.stringify({ text })
+                body: JSON.stringify({ info })
             })
 
             const { success } = await response.json()
