@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Yangiliklar</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
+    <link href="css/styles.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"
+        crossorigin="anonymous"></script>
+</head>
+
+<body class="sb-nav-fixed">
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+        <!-- Navbar Brand-->
+        <a class="navbar-brand ps-3" href="dashboard.html">Admin Panel</a>
+    </nav>
+    <div id="layoutSidenav">
+        <div id="layoutSidenav_nav">
+            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                <div class="sb-sidenav-menu">
+                    <div class="nav">
+                        <div class="sb-sidenav-menu-heading">Bo'limlar</div>
+                        <a class="nav-link" href="dashboard.html">
+                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            Bosh sahifa
+                        </a>
+                        <a class="nav-link" href="info.html">
+                            <div class="sb-nav-link-icon"><i class="fas fa-paperclip"></i></div>
+                            Qabul uchun
+                        </a>
+                        <a class="nav-link" href="news.html">
+                            <div class="sb-nav-link-icon"><i class="fas fa-rss"></i></div>
+                            Yangiliklar
+                        </a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <div class="card-header">
+                        <i class="fas fa-table me-1"></i>
+                        Yangiliklar
+                    </div>
+
+                    <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <form class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="updateModalLabel">Yangilikni o'zgartirish</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <label for="title" class="form-label m-1">Sarlavha</label>
+                                    <input type="text" name="title" id="title" class="form-control mt-1">
+                                    <label for="text" class="form-label">Matn</label>
+                                    <textarea name="text" id="text" cols="30" rows="10"
+                                        class="form-control mt-1"></textarea>
+                                    <label for="image" class="form-label">Rasm</label>
+                                    <input type="file" name="image" id="image" accept="image/*"
+                                        class="form-control mt-1">
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Yopish</button>
+                                    <button type="submit" class="btn btn-primary">Saqlash</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <table id="news">
+                            <thead>
+                                <tr>
+                                    <th>Rasm</th>
+                                    <th>Sarlavha</th>
+                                    <th>Amallar</th>
+                                </tr>
+                            </thead>
+                        </table>
+
+                        <a href="add-news.html" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Yangilik qo'shish
+                        </a>
+
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+    <script src="js/scripts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // === Yangiliklarni jadvalda ko'rsatamiz ===
+            const datatable = new simpleDatatables.DataTable('#news')
+            const response = await fetch('/api/news')
+            let { success, data } = await response.json()
+
+            if (success) {
+                data = data.map(news => [
+                    `<img src="/images/${news.image}" width="32">`,
+                    news.title,
+                    `<button id="${news._id}" class="update btn btn-warning text-white" data-bs-toggle="modal" data-bs-target="#updateModal"><i class="fas fa-pen"></i> Yangilash</button>
+                    <button id="${news._id}" class="delete btn btn-danger"><i class="fas fa-trash"></i> O'chirish</button>`
+                ])
+
+                datatable.rows().add(data)
+            }
+
+            // === Tugma bosilganda yangilash formasini ochamiz ===
+            document.querySelectorAll('.update')
+                .forEach(button => button.addEventListener('click', async e => {
+                    const response = await fetch(`/api/news/${button.id}`)
+
+                    const { success, data } = await response.json()
+                    if (success) {
+                        document.querySelector('#title').value = data.title
+                        document.querySelector('#text').value = data.text
+                        document.querySelector('form').action = `/api/news/${data._id}`
+                    }
+                }))
+
+            // === Tugma bosilganda o'chiramiz ===
+            document.querySelectorAll('.delete')
+                .forEach(button => button.addEventListener('click', async e => {
+                    alert("Ishonchingiz komilmi?")
+                    const response = await fetch(`/api/news/${button.id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': localStorage.getItem('token')
+                        }
+                    })
+
+                    const { success } = await response.json()
+                    if (success) location.reload()
+                    else if (response.status == 401) location.href = '/'
+                    else console.error("Xatolik yuz berdi.")
+                }))
+
+            // === Formani yuboramiz ===
+            document.querySelector('form').addEventListener('submit', async e => {
+                e.preventDefault()
+
+                if (!(title.value && text.value)) return
+
+                document.querySelector('button[type="submit"]').disabled = true
+
+                const data = new FormData()
+                data.append('title', title.value)
+                data.append('text', text.value)
+                if (image.files[0]) data.append('image', image.files[0])
+
+                const response = await fetch(e.target.action, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': localStorage.getItem('token')
+                    },
+                    body: data
+                })
+
+                const { success } = await response.json()
+                if (success) location.reload()
+                else if (response.status == 401) location.href = './'
+                else console.error("Xatolik yuz berdi!")
+
+                document.querySelector('button[type="submit"]').disabled = false
+            })
+        })
+    </script>
+</body>
+
+</html>
